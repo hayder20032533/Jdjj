@@ -1,0 +1,927 @@
+<!DOCTYPE html>
+
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>تعلم C++ في 30 يوم</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600;700&family=Cairo:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+–bg:      #080c14;
+–surface: #0f1522;
+–card:    #131d2e;
+–border:  #1c2d44;
+–border2: #243550;
+–accent:  #38bdf8;
+–accent2: #818cf8;
+–green:   #34d399;
+–orange:  #fb923c;
+–text:    #e2e8f0;
+–muted:   #64748b;
+–muted2:  #94a3b8;
+–mono:    ‘IBM Plex Mono’, monospace;
+–sans:    ‘Cairo’, sans-serif;
+}
+
+html, body { height: 100%; overflow: hidden; font-family: var(–sans); background: var(–bg); color: var(–text); }
+
+/* ===== APP SHELL ===== */
+.app { display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+
+/* TOP BAR */
+.topbar {
+flex-shrink: 0; height: 62px;
+background: var(–surface);
+border-bottom: 1px solid var(–border);
+display: flex; align-items: center; justify-content: space-between;
+padding: 0 18px; gap: 14px; z-index: 50;
+}
+.t-logo { display: flex; align-items: center; gap: 9px; }
+.t-logo .badge {
+background: linear-gradient(135deg, var(–accent), var(–accent2));
+color: #fff; font-family: var(–mono); font-size: 11px; font-weight: 700;
+padding: 4px 10px; border-radius: 7px;
+}
+.t-logo h1 { font-size: 15px; font-weight: 700; }
+
+.t-prog { display: flex; align-items: center; gap: 10px; flex: 1; max-width: 300px; margin: 0 auto; }
+.prog-track { flex: 1; height: 5px; background: var(–border); border-radius: 99px; overflow: hidden; }
+.prog-fill { height: 100%; background: linear-gradient(90deg, var(–accent), var(–accent2)); border-radius: 99px; transition: width .5s ease; width: 0%; }
+.prog-lbl { font-family: var(–mono); font-size: 11px; color: var(–muted2); white-space: nowrap; }
+
+.hamburger { display: none; background: none; border: 1px solid var(–border); border-radius: 7px; padding: 5px 8px; cursor: pointer; color: var(–muted2); font-size: 15px; }
+
+/* BODY */
+.body { display: flex; flex: 1; overflow: hidden; }
+
+/* SIDEBAR */
+.sidebar {
+width: 255px; flex-shrink: 0;
+background: var(–surface);
+border-left: 1px solid var(–border);
+display: flex; flex-direction: column; overflow: hidden;
+}
+.sidebar-scroll { overflow-y: auto; flex: 1; padding: 10px 9px 20px; }
+.sidebar-scroll::-webkit-scrollbar { width: 3px; }
+.sidebar-scroll::-webkit-scrollbar-thumb { background: var(–border2); border-radius: 99px; }
+
+.wk-title {
+font-size: 9px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase;
+color: var(–muted); padding: 13px 7px 4px;
+display: flex; align-items: center; gap: 7px;
+}
+.wk-title::after { content: ‘’; flex: 1; height: 1px; background: var(–border); }
+
+.day-btn {
+width: 100%; display: flex; align-items: center; gap: 8px;
+padding: 8px 8px; border: 1px solid transparent; border-radius: 8px;
+background: transparent; color: var(–muted2); cursor: pointer;
+font-family: var(–sans); font-size: 12px; text-align: right;
+transition: all .16s; margin-bottom: 1px;
+}
+.day-btn:hover { background: rgba(56,189,248,.05); color: var(–text); border-color: var(–border); }
+.day-btn.active { background: rgba(56,189,248,.1); color: var(–accent); border-color: rgba(56,189,248,.25); }
+.day-btn.done .d-num { background: var(–green); color: #000; }
+.day-btn.done .d-chk { opacity: 1; }
+
+.d-num {
+flex-shrink: 0; width: 25px; height: 25px; background: var(–border);
+border-radius: 6px; font-family: var(–mono); font-size: 10px; font-weight: 700;
+display: flex; align-items: center; justify-content: center; transition: background .16s;
+}
+.d-title { flex: 1; line-height: 1.3; }
+.d-chk { opacity: 0; color: var(–green); font-size: 10px; transition: opacity .16s; }
+
+/* CONTENT — KEY: display flex column, overflow hidden */
+.content { flex: 1; display: flex; flex-direction: column; overflow: hidden; min-width: 0; }
+
+/* LESSON HEADER — flex-shrink:0 keeps it out of scroll */
+.lesson-hdr {
+flex-shrink: 0;
+background: var(–surface);
+border-bottom: 2px solid rgba(56,189,248,.15);
+padding: 15px 26px;
+display: flex; align-items: flex-start; gap: 13px;
+box-shadow: 0 3px 20px rgba(0,0,0,.55);
+}
+.l-badge {
+flex-shrink: 0;
+background: linear-gradient(135deg, var(–accent), var(–accent2));
+color: #fff; font-family: var(–mono); font-size: 10px; font-weight: 700;
+padding: 4px 12px; border-radius: 99px; margin-top: 3px; white-space: nowrap;
+}
+.l-title { font-size: 19px; font-weight: 900; line-height: 1.2; margin-bottom: 3px; }
+.l-sub { font-size: 12.5px; color: var(–muted2); margin-bottom: 7px; }
+.l-tags { display: flex; flex-wrap: wrap; gap: 4px; }
+.tag { font-family: var(–mono); font-size: 10px; background: rgba(56,189,248,.07); border: 1px solid rgba(56,189,248,.18); color: var(–accent); padding: 2px 8px; border-radius: 99px; }
+
+/* LESSON BODY — this is the ONLY scrolling zone */
+.lesson-body { flex: 1; overflow-y: auto; padding: 26px; }
+.lesson-body::-webkit-scrollbar { width: 4px; }
+.lesson-body::-webkit-scrollbar-thumb { background: var(–border2); border-radius: 99px; }
+
+/* SECTIONS */
+.section { margin-bottom: 26px; }
+.sec-ttl { display: flex; align-items: center; gap: 6px; font-size: 10.5px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: var(–accent); margin-bottom: 11px; }
+.prose { font-size: 14px; line-height: 1.85; color: #cbd5e1; }
+.prose p { margin-bottom: 8px; }
+.pts { list-style: none; display: flex; flex-direction: column; gap: 6px; }
+.pts li { display: flex; gap: 7px; font-size: 13.5px; color: #cbd5e1; line-height: 1.6; }
+.pts li::before { content: ‘▸’; color: var(–accent); flex-shrink: 0; margin-top: 2px; }
+
+/* CODE */
+.code-wrap { position: relative; margin: 12px 0; }
+.code-block {
+background: #040810; border: 1px solid var(–border); border-radius: 9px;
+padding: 14px 16px; font-family: var(–mono); font-size: 12px; line-height: 1.75;
+overflow-x: auto; direction: ltr; text-align: left;
+}
+.code-block::-webkit-scrollbar { height: 3px; }
+.code-block::-webkit-scrollbar-thumb { background: var(–border2); }
+.copy-btn {
+position: absolute; top: 8px; right: 8px;
+background: var(–border); border: none; color: var(–muted2);
+padding: 3px 9px; border-radius: 5px; font-size: 10px;
+font-family: var(–sans); cursor: pointer; transition: all .16s;
+}
+.copy-btn:hover { background: var(–accent); color: #000; }
+
+.kw  { color: #818cf8; font-weight: 600; }
+.fn  { color: #38bdf8; }
+.str { color: #34d399; }
+.cmt { color: #334d67; font-style: italic; }
+.num { color: #fb923c; }
+.typ { color: #fbbf24; }
+
+/* CALLOUTS */
+.tip, .warn { border-radius: 9px; padding: 12px 15px; font-size: 13px; color: #94a3b8; margin: 11px 0; line-height: 1.7; }
+.tip { background: rgba(52,211,153,.06); border: 1px solid rgba(52,211,153,.2); }
+.tip strong { color: var(–green); }
+.warn { background: rgba(251,146,60,.06); border: 1px solid rgba(251,146,60,.2); }
+.warn strong { color: var(–orange); }
+
+.exercise { background: rgba(129,140,248,.07); border: 1px solid rgba(129,140,248,.22); border-radius: 11px; padding: 15px 17px; }
+.exercise h4 { font-size: 12.5px; font-weight: 700; color: #a5b4fc; margin-bottom: 7px; }
+.exercise p { font-size: 13px; color: #94a3b8; line-height: 1.75; }
+
+.divider { height: 1px; background: var(–border); margin: 22px 0; }
+
+.complete-btn {
+display: inline-flex; align-items: center; gap: 7px;
+background: linear-gradient(135deg, #059669, #34d399);
+color: #000; border: none; padding: 12px 28px;
+border-radius: 9px; font-size: 14px; font-weight: 700;
+font-family: var(–sans); cursor: pointer; transition: all .2s; margin-bottom: 6px;
+}
+.complete-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 26px rgba(52,211,153,.3); }
+.complete-btn.done { background: var(–border); color: var(–muted); cursor: default; transform: none; box-shadow: none; }
+
+/* MOBILE */
+@media (max-width: 680px) {
+.hamburger { display: flex; align-items: center; justify-content: center; }
+.t-logo h1 { display: none; }
+.t-prog { max-width: 160px; }
+.sidebar {
+position: fixed; top: 62px; right: 0; bottom: 0; width: 260px;
+transform: translateX(100%); transition: transform .24s cubic-bezier(.4,0,.2,1);
+z-index: 200; border-left: 1px solid var(–border2);
+}
+.sidebar.open { transform: translateX(0); }
+.overlay { display: none; position: fixed; inset: 0; top: 62px; background: rgba(0,0,0,.6); z-index: 199; }
+.overlay.show { display: block; }
+.lesson-hdr { padding: 13px 15px; }
+.l-title { font-size: 16px; }
+.lesson-body { padding: 16px 14px; }
+}
+</style>
+
+</head>
+<style>
+  body {
+    background-color: #000 !important;
+    color: #fff !important;
+  }
+</style>
+<body>
+<div class="app">
+
+  <!-- TOP BAR -->
+
+  <header class="topbar">
+    <div class="t-logo">
+      <span class="badge">C++</span>
+      <h1>تعلم C++ في 30 يوم</h1>
+    </div>
+    <div class="t-prog">
+      <div class="prog-track"><div class="prog-fill" id="prog-fill"></div></div>
+      <span class="prog-lbl" id="prog-lbl">0 / 30</span>
+    </div>
+    <button class="hamburger" onclick="toggleSidebar()">☰</button>
+  </header>
+
+  <div class="body">
+
+```
+<!-- SIDEBAR -->
+<nav class="sidebar" id="sidebar">
+  <div class="sidebar-scroll" id="sidebar-scroll"></div>
+</nav>
+<div class="overlay" id="overlay" onclick="toggleSidebar()"></div>
+
+<!-- CONTENT: flex column, overflow hidden -->
+<div class="content">
+  <!-- STICKY HEADER: flex-shrink 0, never scrolls -->
+  <div class="lesson-hdr" id="lesson-hdr"></div>
+  <!-- SCROLLABLE BODY: flex 1, overflow-y auto -->
+  <div class="lesson-body" id="lesson-body"></div>
+</div>
+```
+
+  </div>
+</div>
+
+<script>
+/* ── CURRICULUM ─────────────────────────────────────────── */
+const weeks = [
+  { label: "أسبوع 1 — الأساسيات", days: [
+    { title:"مقدمة وإعداد البيئة", sub:"ما هو C++؟ وكيف نبدأ", tags:["مقدمة","Hello World","إعداد"], body:`
+<div class="section"><div class="sec-ttl"><span>📖</span>ما هو C++؟</div>
+<div class="prose"><p>C++ لغة برمجة قوية وسريعة جداً طوّرها <strong>Bjarne Stroustrup</strong> في الثمانينيات. تُستخدم في الألعاب وأنظمة التشغيل والذكاء الاصطناعي وكل ما يحتاج أداءً عالياً.</p></div>
+<ul class="pts"><li>تطوير الألعاب — Unreal Engine مكتوب بـ C++</li><li>أنظمة التشغيل Windows وmacOS وLinux</li><li>برامج الذكاء الاصطناعي ومعالجة الصور</li></ul></div>
+<div class="section"><div class="sec-ttl"><span>⚙️</span>كيف تبدأ؟</div>
+<ul class="pts"><li><strong>أسهل طريقة:</strong> موقع <strong>onlinegdb.com</strong> — بدون أي تثبيت</li><li><strong>محلياً:</strong> VS Code + امتداد C/C++ + مترجم MinGW</li></ul></div>
+<div class="section"><div class="sec-ttl"><span>💻</span>أول برنامج — Hello World</div>
+<div class="code-wrap"><button class="copy-btn" onclick="doCopy(this)">نسخ</button>
+<div class="code-block"><span class="kw">#include</span> <span class="str">&lt;iostream&gt;</span>
+<span class="kw">using namespace</span> <span class="typ">std</span>;
+
+<span class="typ">int</span> <span class="fn">main</span>() {
+    <span class="cmt">// هذا السطر يطبع نص على الشاشة</span>
+    cout &lt;&lt; <span class="str">"Hello, World!"</span> &lt;&lt; endl;
+    <span class="kw">return</span> <span class="num">0</span>;
+}</div></div>
+<div class="tip"><strong>💡 شرح الكود:</strong><br>• <code>#include &lt;iostream&gt;</code> — مكتبة الإدخال/الإخراج<br>• <code>int main()</code> — نقطة بداية أي برنامج<br>• <code>cout &lt;&lt;</code> — للطباعة على الشاشة<br>• <code>return 0;</code> — البرنامج انتهى بنجاح</div></div>
+<div class="section"><div class="sec-ttl"><span>🎯</span>تمرين اليوم</div>
+<div class="exercise"><h4>🏋️ التمرين</h4><p>اكتب برنامج يطبع اسمك وعمرك على سطرين منفصلين.</p></div></div>`},
+
+    { title:"المتغيرات وأنواع البيانات", sub:"int, float, double, string, bool, char", tags:["variables","data types","int","string"], body:`
+<div class="section"><div class="sec-ttl"><span>📦</span>ما هو المتغير؟</div>
+<div class="prose"><p>المتغير صندوق في ذاكرة الحاسوب نحفظ فيه بيانات. كل متغير له <strong>نوع</strong> و<strong>اسم</strong> و<strong>قيمة</strong>.</p></div></div>
+<div class="section"><div class="sec-ttl"><span>🔢</span>أنواع البيانات</div>
+<div class="code-wrap"><button class="copy-btn" onclick="doCopy(this)">نسخ</button>
+<div class="code-block"><span class="typ">int</span>    age    = <span class="num">20</span>;       <span class="cmt">// عدد صحيح</span>
+<span class="typ">float</span>  height = <span class="num">1.75f</span>;   <span class="cmt">// عشري (4 بايت)</span>
+<span class="typ">double</span> gpa    = <span class="num">3.85</span>;    <span class="cmt">// عشري أدق (8 بايت)</span>
+<span class="typ">string</span> name   = <span class="str">"أحمد"</span>;  <span class="cmt">// نص</span>
+<span class="typ">bool</span>   active = <span class="kw">true</span>;    <span class="cmt">// صح أو خطأ</span>
+<span class="typ">char</span>   grade  = <span class="str">'A'</span>;     <span class="cmt">// حرف واحد</span>
+
+cout &lt;&lt; <span class="str">"الاسم: "</span>  &lt;&lt; name &lt;&lt; endl;
+cout &lt;&lt; <span class="str">"العمر: "</span>  &lt;&lt; age  &lt;&lt; endl;</div></div>
+<div class="tip"><strong>💡 float أم double؟</strong><br>float أسرع لكن أقل دقة. double أدق. في الغالب استخدم double.</div></div>
+<div class="section"><div class="sec-ttl"><span>📝</span>قواعد التسمية</div>
+<ul class="pts"><li>تبدأ بحرف أو _ وليس رقم</li><li>لا مسافات — استخدم camelCase مثل <code>myAge</code></li><li>حساسة للحالة: <code>age</code> ≠ <code>Age</code></li></ul></div>
+<div class="section"><div class="sec-ttl"><span>🎯</span>تمرين اليوم</div>
+<div class="exercise"><h4>🏋️ التمرين</h4><p>أنشئ متغيرات تصف نفسك: الاسم، العمر، الطول، المعدل، وهل أنت طالب. ثم اطبع كل المعلومات.</p></div></div>`},
+
+    { title:"العمليات الحسابية والإدخال", sub:"الحساب + cin لقراءة البيانات", tags:["arithmetic","cin","operators","%"], body:`
+<div class="section"><div class="sec-ttl"><span>🔢</span>العمليات الحسابية</div>
+<div class="code-wrap"><button class="copy-btn" onclick="doCopy(this)">نسخ</button>
+<div class="code-block"><span class="typ">int</span> a = <span class="num">10</span>, b = <span class="num">3</span>;
+cout &lt;&lt; a + b; <span class="cmt">// 13 — جمع</span>
+cout &lt;&lt; a - b; <span class="cmt">// 7  — طرح</span>
+cout &lt;&lt; a * b; <span class="cmt">// 30 — ضرب</span>
+cout &lt;&lt; a / b; <span class="cmt">// 3  — قسمة صحيحة!</span>
+cout &lt;&lt; a % b; <span class="cmt">// 1  — باقي القسمة</span>
+
+<span class="cmt">// قسمة عشرية صحيحة:</span>
+<span class="typ">double</span> r = (<span class="typ">double</span>)a / b; <span class="cmt">// 3.333</span></div></div>
+<div class="warn"><strong>⚠️ انتبه!</strong> قسمة int على int = int دائماً. 10/3 = 3 وليس 3.33</div></div>
+<div class="section"><div class="sec-ttl"><span>⌨️</span>قراءة من المستخدم</div>
+<div class="code-wrap"><button class="copy-btn" onclick="doCopy(this)">نسخ</button>
+<div class="code-block"><span class="typ">int</span> n1, n2;
+cout &lt;&lt; <span class="str">"أدخل رقمين: "</span>;
+cin &gt;&gt; n1 &gt;&gt; n2;
+cout &lt;&lt; <span class="str">"المجموع = "</span> &lt;&lt; n1 + n2 &lt;&lt; endl;</div></div></div>
+<div class="section"><div class="sec-ttl"><span>🎯</span>تمرين اليوم</div>
+<div class="exercise"><h4>🏋️ التمرين</h4><p>آلة حاسبة: اطلب رقمين واعرض الجمع والطرح والضرب والقسمة وباقي القسمة.</p></div></div>`},
+
+    { title:"الشروط if / else", sub:"اتخاذ القرارات في البرنامج", tags:["if","else","conditions","&&","||"], body:`
+<div class="section"><div class="sec-ttl"><span>🤔</span>الشروط</div>
+<div class="prose"><p>الشروط تجعل برنامجك يتخذ قرارات. "إذا كانت الدرجة فوق 50 فناجح وإلا فراسب".</p></div></div>
+<div class="section"><div class="sec-ttl"><span>💻</span>if / else if / else</div>
+<div class="code-wrap"><button class="copy-btn" onclick="doCopy(this)">نسخ</button>
+<div class="code-block"><span class="typ">int</span> score;
+cout &lt;&lt; <span class="str">"أدخل درجتك: "</span>;
+cin &gt;&gt; score;
+
+<span class="kw">if</span>      (score &gt;= <span class="num">90</span>) cout &lt;&lt; <span class="str">"ممتاز 🌟"</span>;
+<span class="kw">else if</span> (score &gt;= <span class="num">75</span>) cout &lt;&lt; <span class="str">"جيد جداً 👍"</span>;
+<span class="kw">else if</span> (score &gt;= <span class="num">60</span>) cout &lt;&lt; <span class="str">"جيد"</span>;
+<span class="kw">else if</span> (score &gt;= <span class="num">50</span>) cout &lt;&lt; <span class="str">"مقبول"</span>;
+<span class="kw">else</span>                  cout &lt;&lt; <span class="str">"راسب 😢"</span>;</div></div>
+<div class="tip"><strong>💡 عوامل المقارنة:</strong><br><code>==</code> يساوي | <code>!=</code> لا يساوي | <code>&gt; &lt; &gt;= &lt;=</code> مقارنة<br><code>&amp;&amp;</code> و (AND) | <code>||</code> أو (OR)</div>
+<div class="warn"><strong>⚠️ خطأ شائع!</strong> <code>=</code> للتعيين، <code>==</code> للمقارنة. لا تخلط بينهما!</div></div>
+<div class="section"><div class="sec-ttl"><span>🎯</span>تمرين اليوم</div>
+<div class="exercise"><h4>🏋️ التمرين</h4><p>برنامج يسأل عن العمر ويخبره: طفل (أقل 13) / مراهق (13-17) / بالغ (18-64) / مسن (65+).</p></div></div>`},
+
+    { title:"Switch Case", sub:"الاختيار بين حالات متعددة", tags:["switch","case","break","default"], body:`
+<div class="section"><div class="sec-ttl"><span>🎛️</span>switch مقابل if-else</div>
+<div class="prose"><p>switch أفضل حين تقارن متغيراً واحداً بقيم ثابتة متعددة. أنظف وأسرع.</p></div></div>
+<div class="section"><div class="sec-ttl"><span>💻</span>مثال — أيام الأسبوع</div>
+<div class="code-wrap"><button class="copy-btn" onclick="doCopy(this)">نسخ</button>
+<div class="code-block"><span class="typ">int</span> day;
+cin &gt;&gt; day;
+<span class="kw">switch</span> (day) {
+    <span class="kw">case</span> <span class="num">1</span>: cout &lt;&lt; <span class="str">"الأحد"</span>;    <span class="kw">break</span>;
+    <span class="kw">case</span> <span class="num">2</span>: cout &lt;&lt; <span class="str">"الاثنين"</span>;  <span class="kw">break</span>;
+    <span class="kw">case</span> <span class="num">6</span>:
+    <span class="kw">case</span> <span class="num">7</span>: cout &lt;&lt; <span class="str">"عطلة! 🎉"</span>;  <span class="kw">break</span>;
+    <span class="kw">default</span>: cout &lt;&lt; <span class="str">"يوم عادي"</span>;
+}</div></div>
+<div class="warn"><strong>⚠️ break مهم!</strong> بدونه سينفذ كل الـ cases بعد المتطابق. خطأ شائع جداً!</div></div>
+<div class="section"><div class="sec-ttl"><span>🎯</span>تمرين اليوم</div>
+<div class="exercise"><h4>🏋️ التمرين</h4><p>آلة حاسبة بـ switch: رقمين وعملية (+، -، *، /) والنتيجة.</p></div></div>`},
+
+    { title:"حلقة for", sub:"التكرار عدد معروف من المرات", tags:["for loop","iteration","nested"], body:`
+<div class="section"><div class="sec-ttl"><span>🔄</span>لماذا الحلقات؟</div>
+<div class="prose"><p>بدلاً من كتابة cout مئة مرة، الحلقة تكرر الكود أوتوماتيكياً.</p></div></div>
+<div class="section"><div class="sec-ttl"><span>💻</span>أمثلة</div>
+<div class="code-wrap"><button class="copy-btn" onclick="doCopy(this)">نسخ</button>
+<div class="code-block"><span class="cmt">// for (تهيئة ; شرط ; تحديث)</span>
+<span class="kw">for</span> (<span class="typ">int</span> i = <span class="num">1</span>; i &lt;= <span class="num">5</span>; i++)
+    cout &lt;&lt; i &lt;&lt; <span class="str">" "</span>;  <span class="cmt">// 1 2 3 4 5</span>
+
+<span class="cmt">// جدول الضرب</span>
+<span class="kw">for</span> (<span class="typ">int</span> i = <span class="num">1</span>; i &lt;= <span class="num">10</span>; i++)
+    cout &lt;&lt; <span class="str">"7 × "</span> &lt;&lt; i &lt;&lt; <span class="str">" = "</span> &lt;&lt; <span class="num">7</span>*i &lt;&lt; endl;
+
+<span class="cmt">// عد بالعكس</span>
+<span class="kw">for</span> (<span class="typ">int</span> i = <span class="num">10</span>; i &gt;= <span class="num">1</span>; i--)
+    cout &lt;&lt; i &lt;&lt; <span class="str">"... "</span>;</div></div></div>
+<div class="section"><div class="sec-ttl"><span>🎯</span>تمرين اليوم</div>
+<div class="exercise"><h4>🏋️ التمرين</h4><p>اطبع جدول ضرب لأي رقم يختاره المستخدم. ثم اطبع الأعداد الزوجية من 1 إلى 100.</p></div></div>`},
+
+    { title:"while و do-while", sub:"التكرار بشرط مجهول النهاية", tags:["while","do-while","break","continue"], body:`
+<div class="section"><div class="sec-ttl"><span>🔄</span>for مقابل while</div>
+<div class="prose"><p><strong>for</strong> = تعرف عدد التكرارات مسبقاً. <strong>while</strong> = تكرر طالما الشرط صحيح.</p></div></div>
+<div class="section"><div class="sec-ttl"><span>💻</span>أمثلة</div>
+<div class="code-wrap"><button class="copy-btn" onclick="doCopy(this)">نسخ</button>
+<div class="code-block"><span class="cmt">// while — يتحقق الشرط أولاً</span>
+<span class="typ">int</span> n = <span class="num">1</span>;
+<span class="kw">while</span> (n &lt;= <span class="num">5</span>) { cout &lt;&lt; n++ &lt;&lt; <span class="str">" "</span>; }
+
+<span class="cmt">// do-while — ينفذ مرة واحدة على الأقل</span>
+<span class="typ">int</span> pass;
+<span class="kw">do</span> {
+    cout &lt;&lt; <span class="str">"أدخل الرقم السري: "</span>;
+    cin &gt;&gt; pass;
+} <span class="kw">while</span> (pass != <span class="num">1234</span>);
+cout &lt;&lt; <span class="str">"مرحباً! ✅"</span>;
+
+<span class="cmt">// break و continue</span>
+<span class="kw">for</span> (<span class="typ">int</span> i=<span class="num">1</span>; i&lt;=<span class="num">10</span>; i++) {
+    <span class="kw">if</span> (i==<span class="num">5</span>) <span class="kw">continue</span>; <span class="cmt">// تخطى 5</span>
+    <span class="kw">if</span> (i==<span class="num">8</span>) <span class="kw">break</span>;    <span class="cmt">// توقف</span>
+    cout &lt;&lt; i &lt;&lt; <span class="str">" "</span>;
+} <span class="cmt">// ناتج: 1 2 3 4 6 7</span></div></div></div>
+<div class="section"><div class="sec-ttl"><span>🎯</span>تمرين اليوم</div>
+<div class="exercise"><h4>🏋️ التمرين</h4><p>لعبة "خمن الرقم": رقم بين 1-100 مع تلميحات "أكبر" أو "أصغر".</p></div></div>`},
+  ]},
+
+  { label: "أسبوع 2 — الدوال والمصفوفات", days: [
+    { title:"الدوال Functions", sub:"تنظيم الكود في وحدات قابلة للإعادة", tags:["functions","parameters","return","void"], body:`
+<div class="section"><div class="sec-ttl"><span>🧩</span>لماذا الدوال؟</div>
+<div class="prose"><p>بدلاً من كتابة نفس الكود مرات، نضعه في دالة ونستدعيها كلما احتجناها.</p></div></div>
+<div class="section"><div class="sec-ttl"><span>💻</span>أنواع الدوال</div>
+<div class="code-wrap"><button class="copy-btn" onclick="doCopy(this)">نسخ</button>
+<div class="code-block"><span class="cmt">// دالة لا تأخذ ولا ترجع</span>
+<span class="typ">void</span> <span class="fn">greet</span>() { cout &lt;&lt; <span class="str">"مرحباً! 👋"</span>; }
+
+<span class="cmt">// دالة تأخذ وترجع</span>
+<span class="typ">int</span> <span class="fn">add</span>(<span class="typ">int</span> a, <span class="typ">int</span> b) { <span class="kw">return</span> a + b; }
+
+<span class="cmt">// قيمة افتراضية</span>
+<span class="typ">void</span> <span class="fn">repeat</span>(<span class="typ">string</span> msg, <span class="typ">int</span> n = <span class="num">1</span>) {
+    <span class="kw">for</span> (<span class="typ">int</span> i=<span class="num">0</span>; i&lt;n; i++) cout &lt;&lt; msg &lt;&lt; endl;
+}
+
+<span class="typ">int</span> <span class="fn">main</span>() {
+    <span class="fn">greet</span>();
+    cout &lt;&lt; <span class="fn">add</span>(<span class="num">5</span>, <span class="num">3</span>);   <span class="cmt">// 8</span>
+    <span class="fn">repeat</span>(<span class="str">"هلا!"</span>, <span class="num">3</span>);
+}</div></div></div>
+<div class="section"><div class="sec-ttl"><span>🎯</span>تمرين اليوم</div>
+<div class="exercise"><h4>🏋️ التمرين</h4><p>اكتب دوال لحساب: مساحة المربع، محيط الدائرة، ومعدل أرقام.</p></div></div>`},
+
+    { title:"النطاق والـ Recursion", sub:"Global vs Local والدالة تستدعي نفسها", tags:["scope","global","local","recursion"], body:`
+<div class="section"><div class="sec-ttl"><span>🌍</span>نطاق المتغيرات</div>
+<div class="code-wrap"><button class="copy-btn" onclick="doCopy(this)">نسخ</button>
+<div class="code-block"><span class="typ">int</span> global = <span class="num">100</span>; <span class="cmt">// في كل مكان</span>
+<span class="typ">void</span> <span class="fn">f</span>() {
+    <span class="typ">int</span> local = <span class="num">5</span>; <span class="cmt">// فقط هنا</span>
+    cout &lt;&lt; global; <span class="cmt">// ✅</span>
+}
+<span class="typ">int</span> <span class="fn">main</span>() {
+    cout &lt;&lt; global; <span class="cmt">// ✅</span>
+    <span class="cmt">// cout &lt;&lt; local; // ❌ خطأ!</span>
+}</div></div></div>
+<div class="section"><div class="sec-ttl"><span>🌀</span>Recursion</div>
+<div class="code-wrap"><button class="copy-btn" onclick="doCopy(this)">نسخ</button>
+<div class="code-block"><span class="cmt">// 5! = 5×4×3×2×1 = 120</span>
+<span class="typ">int</span> <span class="fn">factorial</span>(<span class="typ">int</span> n) {
+    <span class="kw">if</span> (n &lt;= <span class="num">1</span>) <span class="kw">return</span> <span class="num">1</span>; <span class="cmt">// حالة الإيقاف</span>
+    <span class="kw">return</span> n * <span class="fn">factorial</span>(n-<span class="num">1</span>);
+}
+cout &lt;&lt; <span class="fn">factorial</span>(<span class="num">5</span>); <span class="cmt">// 120</span></div></div>
+<div class="warn"><strong>⚠️ مهم!</strong> لا بد من حالة إيقاف وإلا ستعمل الدالة للأبد!</div></div>
+<div class="section"><div class="sec-ttl"><span>🎯</span>تمرين اليوم</div>
+<div class="exercise"><h4>🏋️ التمرين</h4><p>دالة متكررة لأعداد فيبوناتشي: 0, 1, 1, 2, 3, 5, 8...</p></div></div>`},
+
+    { title:"المصفوفات Arrays", sub:"تخزين مجموعة بيانات من نفس النوع", tags:["arrays","index","size"], body:`
+<div class="section"><div class="sec-ttl"><span>📊</span>ما هي المصفوفة؟</div>
+<div class="prose"><p>بدلاً من 10 متغيرات منفصلة، نضعها في مصفوفة. كل عنصر له index يبدأ من <strong>0</strong>.</p></div></div>
+<div class="section"><div class="sec-ttl"><span>💻</span>مثال</div>
+<div class="code-wrap"><button class="copy-btn" onclick="doCopy(this)">نسخ</button>
+<div class="code-block"><span class="typ">int</span> scores[<span class="num">5</span>] = {<span class="num">85</span>,<span class="num">90</span>,<span class="num">78</span>,<span class="num">95</span>,<span class="num">88</span>};
+
+cout &lt;&lt; scores[<span class="num">0</span>]; <span class="cmt">// 85 — أول</span>
+cout &lt;&lt; scores[<span class="num">4</span>]; <span class="cmt">// 88 — آخر</span>
+
+<span class="kw">for</span> (<span class="typ">int</span> i=<span class="num">0</span>; i&lt;<span class="num">5</span>; i++)
+    cout &lt;&lt; scores[i] &lt;&lt; <span class="str">" "</span>;</div></div>
+<div class="warn"><strong>⚠️ تجاوز الحدود!</strong> مصفوفة 5 — لا تصل إلى index 5 أو أكثر. هذا أخطر خطأ في C++!</div></div>
+<div class="section"><div class="sec-ttl"><span>🎯</span>تمرين اليوم</div>
+<div class="exercise"><h4>🏋️ التمرين</h4><p>اقرأ 10 أرقام واعرض: المجموع، المعدل، أكبر رقم، أصغر رقم.</p></div></div>`},
+
+    { title:"المصفوفات ثنائية الأبعاد", sub:"الجداول والمصفوفات المتداخلة", tags:["2D arrays","matrix","nested loops"], body:`
+<div class="section"><div class="sec-ttl"><span>🔲</span>مصفوفة ثنائية = جدول</div>
+<div class="code-wrap"><button class="copy-btn" onclick="doCopy(this)">نسخ</button>
+<div class="code-block"><span class="typ">int</span> m[<span class="num">3</span>][<span class="num">3</span>] = {
+    {<span class="num">2</span>,<span class="num">7</span>,<span class="num">6</span>},
+    {<span class="num">9</span>,<span class="num">5</span>,<span class="num">1</span>},
+    {<span class="num">4</span>,<span class="num">3</span>,<span class="num">8</span>}
+};
+<span class="kw">for</span> (<span class="typ">int</span> i=<span class="num">0</span>; i&lt;<span class="num">3</span>; i++) {
+    <span class="kw">for</span> (<span class="typ">int</span> j=<span class="num">0</span>; j&lt;<span class="num">3</span>; j++)
+        cout &lt;&lt; m[i][j] &lt;&lt; <span class="str">"  "</span>;
+    cout &lt;&lt; endl;
+}</div></div></div>
+<div class="section"><div class="sec-ttl"><span>🎯</span>تمرين اليوم</div>
+<div class="exercise"><h4>🏋️ التمرين</h4><p>اقرأ مصفوفة 3×3 واحسب مجموع كل صف ومجموع كل عمود.</p></div></div>`},
+
+    { title:"النصوص Strings", sub:"عمليات النصوص والمعالجة", tags:["string","length","substr","find","getline"], body:`
+<div class="section"><div class="sec-ttl"><span>📝</span>عمليات النصوص</div>
+<div class="code-wrap"><button class="copy-btn" onclick="doCopy(this)">نسخ</button>
+<div class="code-block"><span class="kw">#include</span> <span class="str">&lt;string&gt;</span>
+<span class="typ">string</span> s = <span class="str">"مرحبا بالعالم"</span>;
+
+s.<span class="fn">length</span>()            <span class="cmt">// طول النص</span>
+s.<span class="fn">substr</span>(<span class="num">0</span>, <span class="num">5</span>)        <span class="cmt">// جزء من النص</span>
+s.<span class="fn">find</span>(<span class="str">"العالم"</span>)      <span class="cmt">// موضع الكلمة</span>
+s + <span class="str">" !"</span>              <span class="cmt">// دمج نصين</span>
+
+<span class="cmt">// قراءة جملة كاملة مع مسافات</span>
+<span class="typ">string</span> line;
+<span class="fn">getline</span>(cin, line);</div></div>
+<div class="tip"><strong>💡 cin vs getline</strong><br>cin يتوقف عند المسافة. getline يقرأ السطر كاملاً.</div></div>
+<div class="section"><div class="sec-ttl"><span>🎯</span>تمرين اليوم</div>
+<div class="exercise"><h4>🏋️ التمرين</h4><p>برنامج يقرأ جملة ويعرض عدد الحروف وهل تحتوي على كلمة معينة.</p></div></div>`},
+
+    { title:"المؤشرات — أساسيات", sub:"مفهوم العناوين والذاكرة", tags:["pointers","&","*","memory","address"], body:`
+<div class="section"><div class="sec-ttl"><span>🧠</span>أهم مفهوم في C++</div>
+<div class="prose"><p>كل متغير محفوظ في عنوان في الذاكرة. المؤشر يحفظ <strong>عنوان</strong> متغير آخر بدلاً من قيمته.</p></div></div>
+<div class="section"><div class="sec-ttl"><span>💻</span>أساسيات</div>
+<div class="code-wrap"><button class="copy-btn" onclick="doCopy(this)">نسخ</button>
+<div class="code-block"><span class="typ">int</span> x = <span class="num">42</span>;
+<span class="typ">int</span>* ptr = &amp;x; <span class="cmt">// ptr يحفظ عنوان x</span>
+
+cout &lt;&lt; x;    <span class="cmt">// 42   — القيمة</span>
+cout &lt;&lt; &amp;x;   <span class="cmt">// 0x.. — العنوان</span>
+cout &lt;&lt; *ptr; <span class="cmt">// 42   — القيمة عبر المؤشر</span>
+
+*ptr = <span class="num">100</span>;
+cout &lt;&lt; x;    <span class="cmt">// 100 !</span></div></div>
+<div class="tip"><strong>💡 تذكر:</strong><br><code>&</code> = العنوان | <code>*</code> في التعريف = مؤشر | <code>*</code> عند الاستخدام = المحتوى</div></div>
+<div class="section"><div class="sec-ttl"><span>🎯</span>تمرين اليوم</div>
+<div class="exercise"><h4>🏋️ التمرين</h4><p>اكتب دالة <code>swap</code> تبادل قيمتين باستخدام المؤشرات.</p></div></div>`},
+
+    { title:"الذاكرة الديناميكية", sub:"new, delete والمؤشرات مع المصفوفات", tags:["new","delete","dynamic","nullptr"], body:`
+<div class="section"><div class="sec-ttl"><span>⚡</span>الذاكرة الديناميكية</div>
+<div class="code-wrap"><button class="copy-btn" onclick="doCopy(this)">نسخ</button>
+<div class="code-block"><span class="cmt">// متغير ديناميكي</span>
+<span class="typ">int</span>* p = <span class="kw">new</span> <span class="typ">int</span>(<span class="num">42</span>);
+cout &lt;&lt; *p;
+<span class="kw">delete</span> p;
+p = <span class="kw">nullptr</span>;
+
+<span class="cmt">// مصفوفة ديناميكية</span>
+<span class="typ">int</span> size; cin &gt;&gt; size;
+<span class="typ">int</span>* arr = <span class="kw">new</span> <span class="typ">int</span>[size];
+<span class="kw">for</span> (<span class="typ">int</span> i=<span class="num">0</span>; i&lt;size; i++) arr[i] = i*<span class="num">10</span>;
+<span class="kw">delete</span>[] arr; <span class="cmt">// [] مهمة!</span></div></div>
+<div class="warn"><strong>⚠️ تسريب الذاكرة!</strong> كل <code>new</code> يجب أن يقابله <code>delete</code>. نسيان delete = memory leak!</div></div>
+<div class="section"><div class="sec-ttl"><span>🎯</span>تمرين اليوم</div>
+<div class="exercise"><h4>🏋️ التمرين</h4><p>برنامج يسأل عن حجم المصفوفة، يخصص ذاكرة، يملأها، يطبعها، ثم يحررها.</p></div></div>`},
+  ]},
+
+  { label: "أسبوع 3 — البرمجة الكائنية OOP", days: [
+    { title:"الكلاسات والكائنات", sub:"أساس البرمجة الكائنية OOP", tags:["class","object","OOP","methods"], body:`
+<div class="section"><div class="sec-ttl"><span>🏗️</span>ما هي OOP؟</div>
+<div class="prose"><p>نمثل الأشياء الحقيقية كـ "كائنات" لها خصائص وسلوكيات. السيارة لها لون وسرعة ويمكنها تسريع وتوقف.</p></div></div>
+<div class="section"><div class="sec-ttl"><span>💻</span>أول Class</div>
+<div class="code-wrap"><button class="copy-btn" onclick="doCopy(this)">نسخ</button>
+<div class="code-block"><span class="kw">class</span> <span class="typ">Car</span> {
+<span class="kw">public</span>:
+    <span class="typ">string</span> brand;
+    <span class="typ">int</span>    speed = <span class="num">0</span>;
+
+    <span class="typ">void</span> <span class="fn">accelerate</span>(<span class="typ">int</span> n) {
+        speed += n;
+        cout &lt;&lt; brand &lt;&lt; <span class="str">": "</span> &lt;&lt; speed &lt;&lt; <span class="str">" كم"</span>;
+    }
+};
+
+<span class="typ">int</span> <span class="fn">main</span>() {
+    <span class="typ">Car</span> c;
+    c.brand = <span class="str">"Toyota"</span>;
+    c.<span class="fn">accelerate</span>(<span class="num">60</span>);
+}</div></div></div>
+<div class="section"><div class="sec-ttl"><span>🎯</span>تمرين اليوم</div>
+<div class="exercise"><h4>🏋️ التمرين</h4><p>أنشئ class للطالب: اسم، عمر، معدل، دالة للعرض، دالة لتحديث المعدل.</p></div></div>`},
+
+    { title:"Constructor و Destructor", sub:"تهيئة وتنظيف الكائنات تلقائياً", tags:["constructor","destructor","initialization"], body:`
+<div class="section"><div class="sec-ttl"><span>🔧</span>Constructor</div>
+<div class="code-wrap"><button class="copy-btn" onclick="doCopy(this)">نسخ</button>
+<div class="code-block"><span class="kw">class</span> <span class="typ">BankAccount</span> {
+<span class="kw">public</span>:
+    <span class="typ">string</span> owner; <span class="typ">double</span> balance;
+
+    <span class="fn">BankAccount</span>(<span class="typ">string</span> n, <span class="typ">double</span> b) {
+        owner=n; balance=b;
+        cout &lt;&lt; <span class="str">"✅ فُتح حساب لـ "</span> &lt;&lt; owner;
+    }
+    ~<span class="fn">BankAccount</span>() {
+        cout &lt;&lt; <span class="str">"🔒 أُغلق حساب "</span> &lt;&lt; owner;
+    }
+    <span class="typ">void</span> <span class="fn">deposit</span>(<span class="typ">double</span> n) { balance += n; }
+    <span class="typ">void</span> <span class="fn">show</span>() { cout &lt;&lt; owner &lt;&lt; <span class="str">": "</span> &lt;&lt; balance; }
+};
+
+<span class="typ">int</span> <span class="fn">main</span>() {
+    <span class="typ">BankAccount</span> acc(<span class="str">"أحمد"</span>, <span class="num">1000</span>);
+    acc.<span class="fn">deposit</span>(<span class="num">500</span>);
+    acc.<span class="fn">show</span>();
+}</div></div></div>
+<div class="section"><div class="sec-ttl"><span>🎯</span>تمرين اليوم</div>
+<div class="exercise"><h4>🏋️ التمرين</h4><p>أضف Constructor و Destructor لكلاس Student وأضف دالة لإضافة درجة وحساب المعدل.</p></div></div>`},
+
+    { title:"Encapsulation — التغليف", sub:"إخفاء البيانات وحمايتها", tags:["encapsulation","private","public","getter","setter"], body:`
+<div class="section"><div class="sec-ttl"><span>🔒</span>التغليف</div>
+<div class="prose"><p>نخفي البيانات الحساسة ونسمح بالوصول إليها فقط عبر دوال تتحقق من صحة البيانات.</p></div></div>
+<div class="section"><div class="sec-ttl"><span>💻</span>private + getters/setters</div>
+<div class="code-wrap"><button class="copy-btn" onclick="doCopy(this)">نسخ</button>
+<div class="code-block"><span class="kw">class</span> <span class="typ">Person</span> {
+<span class="kw">private</span>:
+    <span class="typ">string</span> name; <span class="typ">int</span> age;
+<span class="kw">public</span>:
+    <span class="typ">void</span> <span class="fn">setAge</span>(<span class="typ">int</span> a) {
+        <span class="kw">if</span> (a &gt; <span class="num">0</span> &amp;&amp; a &lt; <span class="num">150</span>) age = a;
+        <span class="kw">else</span> cout &lt;&lt; <span class="str">"⚠️ عمر غير صالح!"</span>;
+    }
+    <span class="typ">void</span>   <span class="fn">setName</span>(<span class="typ">string</span> n) { name = n; }
+    <span class="typ">string</span> <span class="fn">getName</span>()         { <span class="kw">return</span> name; }
+    <span class="typ">int</span>    <span class="fn">getAge</span>()          { <span class="kw">return</span> age; }
+};</div></div></div>
+<div class="section"><div class="sec-ttl"><span>🎯</span>تمرين اليوم</div>
+<div class="exercise"><h4>🏋️ التمرين</h4><p>class Temperature: درجة بالسيليزيوس (private) + دوال للتحويل لفهرنهايت وكيلفن.</p></div></div>`},
+
+    { title:"Inheritance — الوراثة", sub:"إعادة استخدام الكود بالوراثة", tags:["inheritance","base class","derived","protected"], body:`
+<div class="section"><div class="sec-ttl"><span>🧬</span>الوراثة</div>
+<div class="prose"><p>الكلاس الابن يرث جميع خصائص ودوال الأب ويمكنه إضافة أو تعديل ما يريد.</p></div></div>
+<div class="section"><div class="sec-ttl"><span>💻</span>مثال</div>
+<div class="code-wrap"><button class="copy-btn" onclick="doCopy(this)">نسخ</button>
+<div class="code-block"><span class="kw">class</span> <span class="typ">Animal</span> {
+<span class="kw">public</span>:
+    <span class="typ">string</span> name;
+    <span class="typ">void</span> <span class="fn">eat</span>()   { cout &lt;&lt; name &lt;&lt; <span class="str">" يأكل"</span>; }
+    <span class="typ">void</span> <span class="fn">sleep</span>() { cout &lt;&lt; name &lt;&lt; <span class="str">" ينام"</span>; }
+};
+
+<span class="kw">class</span> <span class="typ">Dog</span> : <span class="kw">public</span> <span class="typ">Animal</span> {
+<span class="kw">public</span>:
+    <span class="typ">void</span> <span class="fn">bark</span>() { cout &lt;&lt; name &lt;&lt; <span class="str">": هاو! 🐕"</span>; }
+};
+
+<span class="typ">int</span> <span class="fn">main</span>() {
+    <span class="typ">Dog</span> d; d.name = <span class="str">"ريكس"</span>;
+    d.<span class="fn">eat</span>();  <span class="cmt">// موروث ✅</span>
+    d.<span class="fn">bark</span>(); <span class="cmt">// خاص ✅</span>
+}</div></div></div>
+<div class="section"><div class="sec-ttl"><span>🎯</span>تمرين اليوم</div>
+<div class="exercise"><h4>🏋️ التمرين</h4><p>كلاس Shape أساسي ثم ورّث منه Circle و Rectangle لحساب المساحة والمحيط.</p></div></div>`},
+
+    { title:"Polymorphism — تعدد الأشكال", sub:"نفس الدالة بسلوكيات مختلفة", tags:["polymorphism","virtual","override"], body:`
+<div class="section"><div class="sec-ttl"><span>🎭</span>تعدد الأشكال</div>
+<div class="prose"><p>نفس الدالة تتصرف بشكل مختلف حسب نوع الكائن. <code>sound()</code> تقول "هاو" للكلب و"ميو" للقطة.</p></div></div>
+<div class="section"><div class="sec-ttl"><span>💻</span>virtual + override</div>
+<div class="code-wrap"><button class="copy-btn" onclick="doCopy(this)">نسخ</button>
+<div class="code-block"><span class="kw">class</span> <span class="typ">Animal</span> {
+<span class="kw">public</span>:
+    <span class="typ">string</span> name;
+    <span class="kw">virtual</span> <span class="typ">void</span> <span class="fn">sound</span>() { cout &lt;&lt; <span class="str">"..."</span>; }
+};
+<span class="kw">class</span> <span class="typ">Dog</span> : <span class="kw">public</span> <span class="typ">Animal</span> {
+<span class="kw">public</span>:
+    <span class="typ">void</span> <span class="fn">sound</span>() <span class="kw">override</span> { cout &lt;&lt; <span class="str">"هاو! 🐕"</span>; }
+};
+<span class="kw">class</span> <span class="typ">Cat</span> : <span class="kw">public</span> <span class="typ">Animal</span> {
+<span class="kw">public</span>:
+    <span class="typ">void</span> <span class="fn">sound</span>() <span class="kw">override</span> { cout &lt;&lt; <span class="str">"ميو! 🐱"</span>; }
+};
+<span class="typ">int</span> <span class="fn">main</span>() {
+    <span class="typ">Animal</span>* a[] = { <span class="kw">new</span> <span class="typ">Dog</span>, <span class="kw">new</span> <span class="typ">Cat</span> };
+    <span class="kw">for</span> (<span class="kw">auto</span> x : a) x-&gt;<span class="fn">sound</span>(); <span class="cmt">// كل واحد صوته!</span>
+}</div></div></div>
+<div class="section"><div class="sec-ttl"><span>🎯</span>تمرين اليوم</div>
+<div class="exercise"><h4>🏋️ التمرين</h4><p>طوّر مثال الأشكال باستخدام virtual. مصفوفة من Shape* واحسب مساحة كل شكل.</p></div></div>`},
+
+    { title:"Templates", sub:"كود يعمل مع أي نوع بيانات", tags:["templates","generic","typename","T"], body:`
+<div class="section"><div class="sec-ttl"><span>🧩</span>لماذا Templates؟</div>
+<div class="prose"><p>بدلاً من دالة منفصلة لكل نوع، نكتب دالة واحدة تعمل مع int وdouble وstring والكل.</p></div></div>
+<div class="section"><div class="sec-ttl"><span>💻</span>دالة Template</div>
+<div class="code-wrap"><button class="copy-btn" onclick="doCopy(this)">نسخ</button>
+<div class="code-block"><span class="kw">template</span> &lt;<span class="kw">typename</span> T&gt;
+T <span class="fn">getMax</span>(T a, T b) {
+    <span class="kw">return</span> (a &gt; b) ? a : b;
+}
+
+cout &lt;&lt; <span class="fn">getMax</span>(<span class="num">3</span>, <span class="num">7</span>);        <span class="cmt">// 7  (int)</span>
+cout &lt;&lt; <span class="fn">getMax</span>(<span class="num">3.14</span>, <span class="num">2.71</span>); <span class="cmt">// 3.14 (double)</span>
+cout &lt;&lt; <span class="fn">getMax</span>(<span class="str">'z'</span>, <span class="str">'a'</span>);    <span class="cmt">// z (char)</span></div></div></div>
+<div class="section"><div class="sec-ttl"><span>🎯</span>تمرين اليوم</div>
+<div class="exercise"><h4>🏋️ التمرين</h4><p>دالة template تفرز مصفوفة من أي نوع باستخدام Bubble Sort.</p></div></div>`},
+
+    { title:"Exception Handling", sub:"التعامل مع الأخطاء بأمان", tags:["try","catch","throw","runtime_error"], body:`
+<div class="section"><div class="sec-ttl"><span>🛡️</span>معالجة الأخطاء</div>
+<div class="prose"><p>بدلاً من تعطل البرنامج عند أي خطأ، نلتقطه ونتعامل معه بأمان.</p></div></div>
+<div class="section"><div class="sec-ttl"><span>💻</span>try / catch / throw</div>
+<div class="code-wrap"><button class="copy-btn" onclick="doCopy(this)">نسخ</button>
+<div class="code-block"><span class="typ">double</span> <span class="fn">divide</span>(<span class="typ">double</span> a, <span class="typ">double</span> b) {
+    <span class="kw">if</span> (b == <span class="num">0</span>)
+        <span class="kw">throw</span> runtime_error(<span class="str">"لا قسمة على صفر!"</span>);
+    <span class="kw">return</span> a / b;
+}
+<span class="typ">int</span> <span class="fn">main</span>() {
+    <span class="kw">try</span> {
+        cout &lt;&lt; <span class="fn">divide</span>(<span class="num">10</span>, <span class="num">0</span>); <span class="cmt">// ❌ خطأ</span>
+    }
+    <span class="kw">catch</span> (runtime_error&amp; e) {
+        cout &lt;&lt; <span class="str">"خطأ: "</span> &lt;&lt; e.<span class="fn">what</span>();
+    }
+}</div></div></div>
+<div class="section"><div class="sec-ttl"><span>🎯</span>تمرين اليوم</div>
+<div class="exercise"><h4>🏋️ التمرين</h4><p>دالة لقراءة عمر: إذا كان سالباً أو فوق 150 ارمِ استثناءً مخصصاً.</p></div></div>`},
+  ]},
+
+  { label: "أسبوع 4 — STL وملفات ومشروع", days: [
+    { title:"Vector", sub:"المصفوفة الديناميكية الأكثر استخداماً", tags:["vector","STL","push_back","for-each"], body:`
+<div class="section"><div class="sec-ttl"><span>📦</span>Vector مقابل Array</div>
+<div class="prose"><p>Array حجمها ثابت. Vector يكبر ويصغر ديناميكياً. هو أكثر container استخداماً في C++.</p></div></div>
+<div class="section"><div class="sec-ttl"><span>💻</span>العمليات الأساسية</div>
+<div class="code-wrap"><button class="copy-btn" onclick="doCopy(this)">نسخ</button>
+<div class="code-block"><span class="kw">#include</span> <span class="str">&lt;vector&gt;</span>
+<span class="typ">vector</span>&lt;<span class="typ">int</span>&gt; v = {<span class="num">1</span>,<span class="num">2</span>,<span class="num">3</span>};
+
+v.<span class="fn">push_back</span>(<span class="num">4</span>);   <span class="cmt">// أضف للنهاية</span>
+v.<span class="fn">pop_back</span>();    <span class="cmt">// احذف آخر</span>
+v.<span class="fn">size</span>();        <span class="cmt">// الحجم</span>
+v.<span class="fn">clear</span>();       <span class="cmt">// احذف الكل</span>
+v[<span class="num">0</span>];            <span class="cmt">// وصول بالindex</span>
+
+<span class="kw">for</span> (<span class="kw">auto</span>&amp; x : v) cout &lt;&lt; x &lt;&lt; <span class="str">" "</span>;</div></div></div>
+<div class="section"><div class="sec-ttl"><span>🎯</span>تمرين اليوم</div>
+<div class="exercise"><h4>🏋️ التمرين</h4><p>قائمة مهام: إضافة مهام وعرضها وحذف مهمة باختيار رقمها.</p></div></div>`},
+
+    { title:"Map و Set", sub:"هياكل بيانات متقدمة من STL", tags:["map","set","key-value","STL"], body:`
+<div class="section"><div class="sec-ttl"><span>🗺️</span>Map و Set</div>
+<div class="code-wrap"><button class="copy-btn" onclick="doCopy(this)">نسخ</button>
+<div class="code-block"><span class="kw">#include</span> <span class="str">&lt;map&gt;</span>
+<span class="kw">#include</span> <span class="str">&lt;set&gt;</span>
+
+<span class="cmt">// Map: مفتاح → قيمة</span>
+<span class="typ">map</span>&lt;<span class="typ">string</span>,<span class="typ">int</span>&gt; g;
+g[<span class="str">"أحمد"</span>] = <span class="num">90</span>;
+g[<span class="str">"سارة"</span>] = <span class="num">95</span>;
+cout &lt;&lt; g[<span class="str">"سارة"</span>]; <span class="cmt">// 95</span>
+
+<span class="kw">for</span> (<span class="kw">auto</span>&amp; [n,v] : g) cout &lt;&lt; n &lt;&lt; <span class="str">":"</span> &lt;&lt; v;
+
+<span class="cmt">// Set: عناصر فريدة مرتبة</span>
+<span class="typ">set</span>&lt;<span class="typ">int</span>&gt; s = {<span class="num">3</span>,<span class="num">1</span>,<span class="num">4</span>,<span class="num">1</span>,<span class="num">5</span>,<span class="num">3</span>};
+<span class="cmt">// → {1, 3, 4, 5}</span></div></div></div>
+<div class="section"><div class="sec-ttl"><span>🎯</span>تمرين اليوم</div>
+<div class="exercise"><h4>🏋️ التمرين</h4><p>برنامج يعد تكرار كل كلمة في جملة باستخدام Map.</p></div></div>`},
+
+    { title:"خوارزميات STL", sub:"sort, find, reverse وغيرها", tags:["algorithm","sort","find","accumulate"], body:`
+<div class="section"><div class="sec-ttl"><span>⚡</span>خوارزميات جاهزة</div>
+<div class="code-wrap"><button class="copy-btn" onclick="doCopy(this)">نسخ</button>
+<div class="code-block"><span class="kw">#include</span> <span class="str">&lt;algorithm&gt;</span>
+<span class="kw">#include</span> <span class="str">&lt;numeric&gt;</span>
+<span class="typ">vector</span>&lt;<span class="typ">int</span>&gt; v = {<span class="num">5</span>,<span class="num">2</span>,<span class="num">8</span>,<span class="num">1</span>,<span class="num">9</span>};
+
+<span class="fn">sort</span>(v.<span class="fn">begin</span>(), v.<span class="fn">end</span>());          <span class="cmt">// تصاعدي</span>
+<span class="fn">reverse</span>(v.<span class="fn">begin</span>(), v.<span class="fn">end</span>());       <span class="cmt">// عكس</span>
+<span class="fn">find</span>(v.<span class="fn">begin</span>(), v.<span class="fn">end</span>(), <span class="num">8</span>);       <span class="cmt">// بحث</span>
+*<span class="fn">max_element</span>(v.<span class="fn">begin</span>(), v.<span class="fn">end</span>()); <span class="cmt">// أكبر</span>
+<span class="fn">accumulate</span>(v.<span class="fn">begin</span>(), v.<span class="fn">end</span>(), <span class="num">0</span>); <span class="cmt">// مجموع</span></div></div></div>
+<div class="section"><div class="sec-ttl"><span>🎯</span>تمرين اليوم</div>
+<div class="exercise"><h4>🏋️ التمرين</h4><p>اقرأ أسماء طلاب ودرجاتهم ورتبهم تنازلياً حسب الدرجة.</p></div></div>`},
+
+    { title:"الملفات File I/O", sub:"قراءة وكتابة الملفات", tags:["files","ifstream","ofstream","fstream"], body:`
+<div class="section"><div class="sec-ttl"><span>📁</span>قراءة وكتابة</div>
+<div class="code-wrap"><button class="copy-btn" onclick="doCopy(this)">نسخ</button>
+<div class="code-block"><span class="kw">#include</span> <span class="str">&lt;fstream&gt;</span>
+
+<span class="cmt">// كتابة</span>
+<span class="typ">ofstream</span> out(<span class="str">"data.txt"</span>);
+<span class="kw">if</span> (out.<span class="fn">is_open</span>()) {
+    out &lt;&lt; <span class="str">"أحمد"</span> &lt;&lt; endl;
+    out.<span class="fn">close</span>();
+}
+<span class="cmt">// قراءة</span>
+<span class="typ">ifstream</span> in(<span class="str">"data.txt"</span>);
+<span class="typ">string</span> line;
+<span class="kw">while</span> (<span class="fn">getline</span>(in, line))
+    cout &lt;&lt; line &lt;&lt; endl;
+in.<span class="fn">close</span>();</div></div>
+<div class="tip"><strong>💡</strong> تحقق دائماً من <code>is_open()</code> قبل القراءة أو الكتابة.</div></div>
+<div class="section"><div class="sec-ttl"><span>🎯</span>تمرين اليوم</div>
+<div class="exercise"><h4>🏋️ التمرين</h4><p>دفتر عناوين: يحفظ أسماء وأرقام في ملف ويتيح البحث.</p></div></div>`},
+
+    { title:"Lambda وC++ الحديثة", sub:"دوال مختصرة وكود عصري", tags:["lambda","auto","modern C++17"], body:`
+<div class="section"><div class="sec-ttl"><span>⚡</span>Lambda</div>
+<div class="code-wrap"><button class="copy-btn" onclick="doCopy(this)">نسخ</button>
+<div class="code-block"><span class="cmt">// lambda في متغير</span>
+<span class="kw">auto</span> sq = [](<span class="typ">int</span> x) { <span class="kw">return</span> x*x; };
+cout &lt;&lt; <span class="fn">sq</span>(<span class="num">5</span>); <span class="cmt">// 25</span>
+
+<span class="cmt">// ترتيب تنازلي</span>
+<span class="fn">sort</span>(v.<span class="fn">begin</span>(), v.<span class="fn">end</span>(),
+    [](<span class="typ">int</span> a, <span class="typ">int</span> b){ <span class="kw">return</span> a &gt; b; });
+
+<span class="cmt">// تصفية الأزواج</span>
+<span class="typ">vector</span>&lt;<span class="typ">int</span>&gt; evens;
+<span class="fn">copy_if</span>(v.<span class="fn">begin</span>(), v.<span class="fn">end</span>(),
+    back_inserter(evens),
+    [](<span class="typ">int</span> x){ <span class="kw">return</span> x%<span class="num">2</span>==<span class="num">0</span>; });</div></div></div>
+<div class="section"><div class="sec-ttl"><span>🎯</span>تمرين اليوم</div>
+<div class="exercise"><h4>🏋️ التمرين</h4><p>استخدم lambda لفلترة قائمة وإبقاء الأعداد الأولية فقط.</p></div></div>`},
+
+    { title:"Smart Pointers", sub:"إدارة الذاكرة بأمان", tags:["unique_ptr","shared_ptr","make_unique","memory"], body:`
+<div class="section"><div class="sec-ttl"><span>🧠</span>المشكلة مع Raw Pointers</div>
+<div class="prose"><p>المؤشرات التقليدية تسبب memory leaks. Smart Pointers تحرر الذاكرة تلقائياً.</p></div></div>
+<div class="section"><div class="sec-ttl"><span>💻</span>unique_ptr و shared_ptr</div>
+<div class="code-wrap"><button class="copy-btn" onclick="doCopy(this)">نسخ</button>
+<div class="code-block"><span class="kw">#include</span> <span class="str">&lt;memory&gt;</span>
+
+<span class="cmt">// unique_ptr — مالك وحيد، يُحرر تلقائياً</span>
+<span class="kw">auto</span> p = <span class="fn">make_unique</span>&lt;<span class="typ">int</span>&gt;(<span class="num">42</span>);
+cout &lt;&lt; *p; <span class="cmt">// لا تحتاج delete!</span>
+
+<span class="cmt">// shared_ptr — ملكية مشتركة</span>
+<span class="kw">auto</span> s1 = <span class="fn">make_shared</span>&lt;<span class="typ">int</span>&gt;(<span class="num">100</span>);
+<span class="kw">auto</span> s2 = s1;
+cout &lt;&lt; s1.<span class="fn">use_count</span>(); <span class="cmt">// 2</span>
+
+<span class="cmt">// مع كلاسات</span>
+<span class="kw">auto</span> car = <span class="fn">make_unique</span>&lt;<span class="typ">Car</span>&gt;();
+car-&gt;brand = <span class="str">"Toyota"</span>;</div></div>
+<div class="tip"><strong>💡 قاعدة C++ الحديثة:</strong> استخدم smart pointers دائماً. لا تستخدم new/delete مباشرة أبداً.</div></div>
+<div class="section"><div class="sec-ttl"><span>🎯</span>تمرين اليوم</div>
+<div class="exercise"><h4>🏋️ التمرين</h4><p>أعد كتابة BankAccount باستخدام unique_ptr.</p></div></div>`},
+
+    { title:"🏆 المشروع النهائي", sub:"طبّق كل ما تعلمته في 30 يوم!", tags:["project","OOP","STL","files","final"], body:`
+<div class="section"><div class="sec-ttl"><span>🎉</span>مبروك! أكملت 30 يوماً</div>
+<div class="prose"><p>وصلت لآخر يوم! حان وقت تطبيق كل ما تعلمته في مشروع حقيقي شامل.</p></div></div>
+<div class="section"><div class="sec-ttl"><span>🏗️</span>المشروع — نظام إدارة مكتبة</div>
+<div class="exercise"><h4>📚 المتطلبات</h4>
+<ul class="pts" style="margin-top:8px">
+<li>class Book: عنوان، مؤلف، سنة، حالة (متاح/محجوز)</li>
+<li>class Library: vector من الكتب + جميع العمليات</li>
+<li>إضافة وحذف وعرض الكتب</li>
+<li>بحث بالعنوان أو المؤلف</li>
+<li>استعارة كتاب وإرجاعه</li>
+<li>حفظ وتحميل البيانات من ملف</li>
+<li>ترتيب الكتب حسب العنوان أو السنة</li>
+</ul></div></div>
+<div class="section"><div class="sec-ttl"><span>🚀</span>ما بعد 30 يوم</div>
+<ul class="pts">
+<li>Design Patterns: Singleton, Factory, Observer</li>
+<li>Multi-threading والبرمجة المتوازية</li>
+<li>مكتبات: Qt للواجهات، SFML للألعاب</li>
+<li>LeetCode و HackerRank لتدريب المنطق البرمجي</li>
+</ul></div>`},
+  ]},
+];
+
+/* ── FLATTEN ─────────────────────────────────────────────── */
+const allDays = [];
+weeks.forEach(w => w.days.forEach(d => allDays.push({ ...d, wk: w.label })));
+while (allDays.length > 30) allDays.pop();
+
+/* ── STATE ───────────────────────────────────────────────── */
+let cur = 0;
+let done = [];
+try { done = JSON.parse(localStorage.getItem('cpp30') || '[]'); } catch(e) {}
+function save() { try { localStorage.setItem('cpp30', JSON.stringify(done)); } catch(e) {} }
+
+/* ── RENDER ──────────────────────────────────────────────── */
+function buildSidebar() {
+  const el = document.getElementById('sidebar-scroll');
+  el.innerHTML = '';
+  let lastWk = '';
+  allDays.forEach((d, i) => {
+    if (d.wk !== lastWk) {
+      lastWk = d.wk;
+      const g = document.createElement('div');
+      g.className = 'wk-title';
+      g.textContent = d.wk;
+      el.appendChild(g);
+    }
+    const btn = document.createElement('button');
+    btn.className = 'day-btn' + (i===cur?' active':'') + (done.includes(i)?' done':'');
+    btn.innerHTML = `<span class="d-num">${i+1}</span><span class="d-title">${d.title}</span><span class="d-chk">✓</span>`;
+    btn.onclick = () => pick(i);
+    el.appendChild(btn);
+  });
+}
+
+function buildLesson() {
+  const d = allDays[cur];
+  const isDone = done.includes(cur);
+
+  /* Header — never scrolls */
+  document.getElementById('lesson-hdr').innerHTML = `
+    <div><div class="l-badge">اليوم ${cur+1} / 30</div></div>
+    <div>
+      <div class="l-title">${d.title}</div>
+      <div class="l-sub">${d.sub}</div>
+      <div class="l-tags">${d.tags.map(t=>`<span class="tag">${t}</span>`).join('')}</div>
+    </div>`;
+
+  /* Body — scrolls */
+  document.getElementById('lesson-body').innerHTML = `
+    ${d.body}
+    <div class="divider"></div>
+    <button id="done-btn" class="complete-btn ${isDone?'done':''}" onclick="markDone()">
+      ${isDone ? '✓ تم الإكمال' : '✓ وضّع كمكتمل'}
+    </button>`;
+
+  document.getElementById('lesson-body').scrollTop = 0;
+}
+
+function updateProg() {
+  const n = done.length;
+  document.getElementById('prog-fill').style.width = (n/30*100)+'%';
+  document.getElementById('prog-lbl').textContent = n+' / 30';
+}
+
+function pick(i) {
+  cur = i;
+  buildSidebar();
+  buildLesson();
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('overlay').classList.remove('show');
+}
+
+window.markDone = function() {
+  if (done.includes(cur)) return;
+  done.push(cur);
+  save(); updateProg(); buildSidebar(); buildLesson();
+};
+
+window.doCopy = function(btn) {
+  const block = btn.nextElementSibling;
+  navigator.clipboard.writeText(block.innerText).then(() => {
+    btn.textContent = '✓ تم';
+    setTimeout(() => btn.textContent = 'نسخ', 1800);
+  });
+};
+
+window.toggleSidebar = function() {
+  document.getElementById('sidebar').classList.toggle('open');
+  document.getElementById('overlay').classList.toggle('show');
+};
+
+/* ── INIT ────────────────────────────────────────────────── */
+buildSidebar();
+buildLesson();
+updateProg();
+</script>
+
+</body>
+</html>
